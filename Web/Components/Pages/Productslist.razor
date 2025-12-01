@@ -1,0 +1,131 @@
+﻿@page "/Productslist"
+@inject HttpClient Http
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<h2 class="text-primary mb-3">Products List</h2>
+
+
+
+
+@if (isLoading)
+{
+    <p><em>Loading products...</em></p>
+}
+else if (productList != null && productList.Count > 0)
+{
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Product ID</th>
+                <th>Product Code</th>
+                <th>Product Name</th>
+                <th>Quantity</th>
+                <th>Rate</th>
+                <th>Value</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in productList)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.ProductCode</td>
+                    <td>@item.ProductName</td>
+                    <td>@item.ProductQty</td>
+                    <td>@item.ProductRate</td>
+                    <td>@item.ProductValue</td>
+                    <td>
+                        <button @onclick="()=>DeleteProduct(item.Id)">Delete Product</button>
+                        <button @onclick="()=> EditProduct(item.Id)">Edit Product</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (productList != null && productList.Count == 0)
+{
+    <div class="alert alert-info">No products found.</div>
+}
+
+
+<RadzenDataGrid PageSize="5" AllowPaging="true" AllowSorting="true" Data="@productList" ColumnWidth="400px">
+    <Columns>
+        <RadzenDataGridColumn Property="@nameof(ProductsModel.Id)" Title="Product Id" Width="100px" />
+        <RadzenDataGridColumn Property="@nameof(ProductsModel.ProductCode)" Title="Product Code" Width="100px" />
+        <RadzenDataGridColumn Property="@nameof(ProductsModel.ProductName)" Title="Product Name" FormatString="{0:d}" Width="200px" />
+        <RadzenDataGridColumn Property="@nameof(ProductsModel.ProductQty)" Title="Product QTY" FormatString="{0:d}" Width="100px" />
+        <RadzenDataGridColumn Property="@nameof(ProductsModel.ProductRate)" Title="Product Rate" FormatString="{0:d}" Width="100px" />
+        <RadzenDataGridColumn Property="@nameof(ProductsModel.ProductValue)" Title="Product Value" FormatString="{0:d}" Width="100px" />
+
+    </Columns>
+</RadzenDataGrid>
+
+
+
+@code {
+    private int productId;
+    private string? message;
+    public class ProductsModel
+    {
+        public int Id { get; set; }
+        public string? ProductCode { get; set; }
+        public string? ProductName { get; set; }
+        public string? ProductQty { get; set; }
+        public string? ProductRate { get; set; }
+        public string? ProductValue { get; set; }
+    }
+
+    List<ProductsModel>? productList;
+    bool isLoading = false;
+
+    private async Task LoadProducts()
+    {
+        try
+        {
+            isLoading = true;
+
+            // 👇 Replace with your actual API URL
+
+
+            productList = await Http.GetFromJsonAsync<List<ProductsModel>>("http://localhost:5104/api/Products");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading products: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+
+    private async Task DeleteProduct(int productid)
+    {
+        try
+        {
+            var response = await Http.DeleteAsync($"http://localhost:5104/api/Products/{productid}");
+        }
+        catch (Exception ex)
+
+        {
+            message = $"Error: {ex.Message}";
+        }
+    }
+
+
+    private void EditProduct(int id)
+    {
+        Nav.NavigateTo($"/UpdateProducts/{id}");
+    }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducts();
+    }
+}

@@ -1,0 +1,125 @@
+﻿@page "/UpdateProducts"
+@page "/UpdateProducts/{productId:int}"
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject IJSRuntime Js
+@using Web.Model
+@rendermode InteractiveServer
+
+<h3>Search & Update Products Data</h3>
+<br/>
+<p style="color:red">@message</p>
+
+
+<div class="form-group">
+    <input type="number" placeholder="Enter Product ID" @bind="productId" class="form-control mb-2" />
+
+
+<button @onclick="GetProduct">Search</button>
+
+
+<br />
+<br />
+
+<div>
+    <label>Product Code:</label>
+        <input type="text" @bind="product.ProductCode" class="form-control mb-2" />
+</div>
+
+<div>
+    <label>Product Name:</label>
+        <input type="text" @bind="product.ProductName" class="form-control mb-2" />
+</div>
+
+<div>
+    <label>Product Quantity:</label>
+        <input type="text" @bind="product.ProductQty" class="form-control mb-2" />
+</div>
+
+<div>
+    <label>Product Rate:</label>
+        <input type="text" @bind="product.ProductRate" class="form-control mb-2" />
+</div>
+
+<div>
+    <label>Product Value:</label>
+        <input type="text" @bind="product.ProductValue" class="form-control mb-2" />
+</div>
+</div>
+<input type="button" value="update"  @onclick="UpdateProduct">
+<input type="button" value="Delete" @onclick="DeleteProduct" />
+
+@code {
+    [Parameter] public int productId { get; set; }
+    private string? message;
+    private ProductsModel product = new();
+
+    private async Task GetProduct()
+    {
+        message = string.Empty;
+
+        if (productId <= 0)
+        {
+            message = "Please enter a valid Product ID.";
+            return;
+        }
+
+        try
+        {
+            // 👇 Fetch from your API
+            product = await Http.GetFromJsonAsync<ProductsModel>($"http://localhost:5104/api/Products/{productId}");
+            if (product == null)
+            {
+                product = new(); // reset fields
+                message = "No product found.";
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error: {ex.Message}";
+        }
+    }
+
+    private async Task UpdateProduct()
+
+    {
+        try
+        {
+            var respone = await Http.PutAsJsonAsync($"http://localhost:5104/api/Products/{productId}", product);
+            await Js.InvokeVoidAsync("alert", "Product Updated Successfully");
+        }
+        catch (Exception ex)
+        {
+            message = $"Error: {ex.Message}";
+        }
+     
+        await Task.Delay(3000);
+        Nav.NavigateTo("/Productslist");
+    }
+
+    private async Task DeleteProduct()
+    {
+        try
+        {
+            var response = await Http.DeleteAsync($"http://localhost:5104/api/Products/{productId}");
+            
+        }
+        catch (Exception ex)
+        
+        {
+            message = $"Error: {ex.Message}";
+        }
+        await Js.InvokeVoidAsync("alert", "Product Deleted Successfully");  
+        await Task.Delay(3000);
+        Nav.NavigateTo("/Productslist");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (productId > 0)
+        {
+            await GetProduct();
+        }
+    }
+
+}

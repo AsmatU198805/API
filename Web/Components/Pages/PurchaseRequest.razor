@@ -1,0 +1,209 @@
+﻿@page "/PurchaseRequest"
+@rendermode InteractiveServer
+@using Web.Model
+@inject HttpClient Http
+@inject IJSRuntime JS
+@using Radzen
+@using Radzen.Blazor
+
+
+<h3 style="color:darkblue;">Purchase Request Form</h3>
+
+<br/><br/>
+
+<div class="container">
+
+    <!-- Row 1 -->
+    <div class="row">
+        <div class="col-md-4">
+            <label>PR No</label>
+            <input type="text" class="form-control mb-2" @bind="PRModel.PRNo" />
+        </div>
+
+        <div class="col-md-4">
+            <label>PR Date</label>
+            <input type="date" class="form-control mb-2" @bind="PRModel.PRDate" />
+        </div>
+
+        <div class="col-md-4">
+            <label>Quantity</label>
+            <input type="text" class="form-control mb-2" @bind="PRModel.PRQuantity" />
+        </div>
+    </div>
+
+    <!-- Row 2 -->
+    <div class="row">
+        <div class="col-md-4">
+            <label>Select Product</label>
+            <select class="form-control mb-2" @bind="PRModel.Id">
+                <option value="0">-- Select Product --</option>
+                @foreach (var p in ProductsList)
+                {
+                    <option value="@p.Id">@p.ProductName</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label>Select Measuring Unit</label>
+            <select class="form-control mb-2" @bind="PRModel.MUnitId">
+                <option value="0">-- Select M.Unit --</option>
+                @foreach (var mu in MUnitList)
+                {
+                    <option value="@mu.MUnitId">@mu.MUnitName</option>
+                }
+            }
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <button class="btn btn-primary w-100" @onclick="SavePR">
+                @(PRModel.PRID == 0 ? "Save PR" : "Update PR")
+            </button>
+        </div>
+    </div>
+
+    <p style="color:green">@message</p>
+</div>
+
+<!-- 🔵 RADZEN DATAGRID -->
+<h4 class="mt-4" style="color:darkblue;">Purchase Requests List</h4>
+
+<RadzenDataGrid TItem="PurchaseRequestmodel" Data="@PRList" 
+                 ShowPagingSummary="true" AllowSorting="true"
+                 AllowFiltering="true" AllowPaging="true" PageSize="10"
+                 RowSelect="@EditPR">
+
+    <Columns>
+
+        <RadzenDataGridColumn TItem="PurchaseRequestmodel" Property="PRNo" Title="PR No" />
+        <RadzenDataGridColumn TItem="PurchaseRequestmodel" Property="PRDate" Title="PR Date" />
+        <RadzenDataGridColumn TItem="PurchaseRequestmodel" Title="Product">
+            <Template Context="pr">
+                @ProductsList.FirstOrDefault(x => x.Id == pr.Id)?.ProductName
+            </Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="PurchaseRequestmodel" Title="M.Unit">
+            <Template Context="pr">
+                @MUnitList.FirstOrDefault(x => x.MUnitId == pr.MUnitId)?.MUnitName
+            </Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="PurchaseRequestmodel" Property="PRQuantity" Title="Quantity" />
+
+        <!-- 🔥 ACTION BUTTON COLUMN -->
+        <RadzenDataGridColumn TItem="PurchaseRequestmodel" Title="Actions">
+            <Template Context="pr">
+                <RadzenButton ButtonStyle="ButtonStyle.Warning" Size="ButtonSize.Small"
+                              Text="Edit" Click="@(() => EditPR(pr))" />
+
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                              Text="Delete" Style="margin-left:10px"
+                              Click="@(() => DeletePR(pr.PRID))" />
+            </Template>
+        </RadzenDataGridColumn>
+
+    </Columns>
+
+</RadzenDataGrid>
+
+@code {
+
+    PurchaseRequestmodel PRModel = new();
+    List<ProductsModel> ProductsList = new();
+    List<MUnitModel> MUnitList = new();
+    List<PurchaseRequestmodel> PRList = new();
+
+    string message = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDropdowns();
+        await LoadPRList();
+    }
+
+    private void EditPR(PurchaseRequestmodel pr)
+    {
+        PRModel = new PurchaseRequestmodel
+        {
+            PRID = pr.PRID,
+            PRNo = pr.PRNo,
+            PRDate = pr.PRDate,
+            PRQuantity = pr.PRQuantity,
+            Id = pr.Id,
+            MUnitId = pr.MUnitId
+        };
+    }
+
+    private async Task DeletePR(int PRID)
+    {
+        bool confirm = await JS.InvokeAsync<bool>("confirm", $"Delete PR No {PRID}?");
+
+        if (!confirm) return;
+
+        var response = await Http.DeleteAsync($"http://localhost:5104/api/PurchaseRequest/{PRID}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadPRList();
+        }
+        else
+        {
+            message = "Error deleting Purchase Request.";
+        }
+    }
+
+    private async Task LoadDropdowns()
+    {
+        ProductsList = await Http.GetFromJsonAsync<List<ProductsModel>>("http://localhost:5104/api/Products");
+        MUnitList = await Http.GetFromJsonAsync<List<MUnitModel>>("http://localhost:5104/api/MUnit");
+    }
+
+    private async Task LoadPRList()
+    {
+        PRList = await Http.GetFromJsonAsync<List<PurchaseRequestmodel>>("http://localhost:5104/api/PurchaseRequest");
+    }
+
+    private async Task SavePR()
+    {
+        message = "";
+
+        if (PRModel.Id == 0 || PRModel.MUnitId == 0)
+        {
+            message = "Select Product and Measuring Unit.";
+            return;
+        }
+
+        try
+        {
+            HttpResponseMessage response;
+
+            if (PRModel.PRID == 0)
+            {
+                response = await Http.PostAsJsonAsync("http://localhost:5104/api/PurchaseRequest", PRModel);
+            }
+            else
+            {
+                response = await Http.PutAsJsonAsync($"http://localhost:5104/api/PurchaseRequest/{PRModel.PRID}", PRModel);
+            }
+
+            if (response.IsSuccessStatusCode)
+            {
+                await JS.InvokeVoidAsync("alert", PRModel.PRID == 0 ? "Saved!" : "Updated!");
+                PRModel = new PurchaseRequestmodel();
+            }
+            else
+            {
+                message = "Error saving PR.";
+            }
+        }
+        catch (Exception ex)
+        {
+            message = ex.Message;
+        }
+
+        await LoadPRList();
+    }
+
+}

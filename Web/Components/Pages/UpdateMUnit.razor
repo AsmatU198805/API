@@ -1,0 +1,119 @@
+﻿@page "/UpdateMUnit"
+@page "/UpdateMUnit/{munitId:int}"
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject IJSRuntime Js
+@using Web.Model
+@rendermode InteractiveServer
+
+
+
+<h3>Update Measuring Unit</h3> <br/>
+<p style="color:red">@message</p>
+<div class="form-group">
+    <input type="number" placeholder="Enter Measuring Unit ID" @bind="munitId" class="form-control mb-2" />
+
+    <button @onclick="GetMunit">Search</button>
+    <br />
+    <br />
+    <div>
+        <lable>M.Unit Code</lable>
+        <input type="text" @bind="munit.MUnitCode" class="form-control mb-2" />
+    </div>
+
+    <div>
+        <lable>M.Unit Name</lable>
+        <input type="text" @bind="munit.MUnitName" class="form-control mb-2" />
+    </div>
+</div>
+
+<input type="button" value="Update" @onclick="UpdateMUnits" />
+<input type="button" value="Delete" @onclick="DeleteMunits" />
+
+
+
+@code {
+    [Parameter] public int munitId { get; set; }
+    private string? message;
+    private MUnitModel munit = new();
+
+    private async Task GetMunit()
+    {
+        message = string.Empty;
+
+        if (munitId <= 0)
+        {
+            message = "Please enter a valid Measuring Unit ID.";
+            return;
+        }
+        try
+        {
+            munit = await Http.GetFromJsonAsync<MUnitModel>($"http://localhost:5104/api/MUnit/{munitId}");
+            if(munit == null)
+            {
+                message = "Measuring Unit not found.";
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error fetching Measuring Unit: {ex.Message}";
+        }
+
+    }
+
+    private async Task UpdateMUnits()
+
+    {
+        try
+        {
+            var response = await Http.PutAsJsonAsync<MUnitModel>($"http://localhost:5104/api/MUnit/{munitId}", munit);
+            if (response.IsSuccessStatusCode)
+            {
+                await Js.InvokeVoidAsync("alert", "Measuring Unit Updated Successfully!");
+               
+            }
+            else
+            {
+                message = "Update failed!";
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error updating Measuring Unit: {ex.Message}";
+        }
+     
+        await Task.Delay(3000);
+        Nav.NavigateTo("/MUnitList");
+    }
+
+    private async Task DeleteMunits()
+    {
+        try
+        {
+            var response = await Http.DeleteAsync($"http://localhost:5104/api/MUnit/{munitId}");
+        }
+        catch (Exception ex)
+        {
+            message = $"Error deleting Measuring Unit: {ex.Message}";
+        }
+        await Js.InvokeVoidAsync("alert", "Measuring Unit Deleted Successfully!");
+        await Task.Delay(3000);
+        Nav.NavigateTo("/MUnitList");
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (munitId > 0)
+        {
+            await GetMunit();
+        }
+    }
+
+
+
+
+
+
+
+}

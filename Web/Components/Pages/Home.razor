@@ -1,0 +1,68 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@inject HttpClient Http
+<div><header>
+    <h1>Counter</h1>
+</header>
+</div>
+
+
+<div>
+    
+<p>The counter value is @currentCount</p>
+<button class="btn btn-primary" @onclick=IncrementCounter>Increment counter</button>
+</div>
+
+<br/>
+<InputCheckbox @bind-Value="FormData.SomeBooleanProperty" />
+<InputDate @bind-Value="FormData.SomeDataTimeProperty" ParsingErrorMessage="Must be Date"/>
+<InputNumber @bind-Value="FormData.SomeIntegerProperty"  ParsingErrorMessage="Must be Integer"  />
+<InputNumber @bind-Value="FormData.SomeDecimalProperty"  ParsingErrorMessage="Must be Decimal"/>
+<InputText @bind-Value="FormData.SomeStringProperty "/>
+<InputTextArea @bind-Value="FormData.SomeMultiLineProperty"/>
+<InputSelect @bind-Value="FormData.SomeSelectedProperty" >
+<option value="Pending" > Pending</option>
+<option value="Active">Active</option>
+<option value="Suspended">Suspended</option>
+
+</InputSelect>
+
+<RadzenButton Click="@ButtonClicked" Text="Hi"></RadzenButton>
+
+@code {
+    private int currentCount = 42;
+    void ButtonClicked()
+    {
+        // Handle the Click event of RadzenButton
+    }
+    private void IncrementCounter()
+    {
+        currentCount++;
+    }
+
+    SomeModel FormData = new SomeModel();
+    class SomeModel
+    {
+        public bool SomeBooleanProperty{ get; set; }
+        public DateTime? SomeDataTimeProperty { get; set; }
+        public int SomeIntegerProperty{ get; set; }
+        public decimal SomeDecimalProperty{ get; set; }
+        public string SomeStringProperty{ get; set; }
+        public string SomeMultiLineProperty{ get; set; }
+        public SomeStateEnum SomeSelectedProperty{ get; set; }
+
+
+
+
+    }
+
+    public enum SomeStateEnum
+    {
+        pending,
+        Active,
+        Suspended
+        
+    }
+
+
+}

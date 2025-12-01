@@ -1,0 +1,42 @@
+﻿@page "/Munitform"
+@rendermode InteractiveServer
+@inject HttpClient Http
+@using Model;
+
+
+<h3 style="color:darkblue;">Measuring Units Setup</h3>
+
+<div class=" form-group">
+  <input type="text" placeholder="Measuring Unit ID" @bind="mUnit.MUnitId" class="form-control mb-2" />
+    <input type="text" placeholder="Measuring Unit Code" @bind="mUnit.MUnitCode" class="form-control mb-2" />
+    <input type="text" placeholder="Measuring Unit Name" @bind="mUnit.MUnitName" class="form-control mb-2" />
+    <button class="btn btn-primary" @onclick="SaveMunit">Save</button>
+</div>
+
+<p style="color:green;">@message</p>
+
+
+
+
+@code {
+    MUnitModel mUnit = new();
+    string message = string.Empty;
+    private async Task SaveMunit()
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("http://localhost:5104/api/MUnit", mUnit);
+            if (response.IsSuccessStatusCode)
+                message = "Measuring Unit Saved Successfully";
+            else
+                message = "Error saving Measuring Unit";
+        }
+        catch(Exception ex)
+        {
+            
+        }
+
+    
+    }   
+
+}
