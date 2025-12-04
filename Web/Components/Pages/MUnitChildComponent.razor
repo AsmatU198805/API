@@ -1,0 +1,54 @@
+﻿
+@rendermode InteractiveServer
+@using Web.Model
+@inject HttpClient Http
+@inject IJSRuntime JS
+@using Radzen
+@using Radzen.Blazor
+
+
+
+
+    <label>Select Measuring Unit</label>
+ 
+    <RadzenDropDown 
+        @bind-Value="SelectedMUnitId" 
+        Data="MUnitList" 
+        TextProperty="MUnitName"
+        ValueProperty="MUnitId"
+        Placeholder="Select MUnit"
+                Style="width:100%" Change="OnValueChanged"       />
+
+
+
+@code {
+    int? SelectedMUnitId { get; set; }
+    List<MUnitModel> MUnitList = new();
+
+
+
+    [Parameter] public EventCallback<int> MUnitChanged { get; set; }
+
+
+    private async Task LoadMUnitDropDown()
+    {
+        MUnitList = await Http.GetFromJsonAsync<List<MUnitModel>>("http://localhost:5104/api/MUnit");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMUnitDropDown();
+    }
+
+
+    private async Task OnValueChanged(object value)
+    {
+
+
+        if (value != null)
+        {
+            await MUnitChanged.InvokeAsync((int)value);
+        }
+    }
+    
+}

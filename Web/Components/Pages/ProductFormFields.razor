@@ -1,0 +1,42 @@
+﻿@using Web.Model
+@using Radzen
+
+<div class="p-3 border rounded" style="max-width:450px;">
+
+    <RadzenLabel Text="Product Code" />
+    <RadzenTextBox @bind-Value="Product.ProductCode"
+                   Style="width:100%; margin-bottom:10px;" />
+
+    <RadzenLabel Text="Product Name" />
+    <RadzenTextBox @bind-Value="Product.ProductName"
+                   Style="width:100%; margin-bottom:10px;" />
+
+    <RadzenLabel Text="Quantity" />
+    <RadzenTextBox @bind-Value="Product.ProductQty"
+                   Style="width:100%; margin-bottom:10px;" />
+
+    <RadzenLabel Text="Rate" />
+    <RadzenTextBox @bind-Value="Product.ProductRate"
+                   Style="width:100%; margin-bottom:10px;" />
+
+    <RadzenLabel Text="Value" />
+    <RadzenTextBox @bind-Value="Product.ProductValue"
+                   Style="width:100%; margin-bottom:10px;" />
+
+    <RadzenButton Text="Save Product"
+                  Icon="save"
+                  Click="OnSaveClicked"
+                  Style="margin-top:10px;" />
+</div>
+
+@code {
+    [Parameter] 
+    public ProductsModel Product { get; set; }
+    [Parameter] 
+    public EventCallback OnSave { get; set; }
+
+    private async Task OnSaveClicked()
+    {
+        await OnSave.InvokeAsync();
+    }
+}

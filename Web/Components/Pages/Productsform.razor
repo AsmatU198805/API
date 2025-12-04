@@ -5,20 +5,12 @@
 
 
 
-<h3 style="color:darkblue;">Product Entry Form</h3>
+<h3 style="color:darkblue;">Product Entry Form(Radzen)</h3>
 
-<div class="form-group">
-     <input type="text" placeholder="Product Id" @bind="product.Id" class="form-control mb-2" />
-    <input type="text" placeholder="Product Code" @bind="product.ProductCode" class="form-control mb-2" />
-    <input type="text" placeholder="Product Name" @bind="product.ProductName" class="form-control mb-2" />
-    <input type="number" placeholder="Quantity" @bind="product.ProductQty" class="form-control mb-2" />
-    <input type="number" placeholder="Rate" @bind="product.ProductRate" class="form-control mb-2" />
-    <input type="number" placeholder="Value" @bind="product.ProductValue" class="form-control mb-2" />
 
-    <button class="btn btn-primary" @onclick="SaveProduct">Save</button>
-</div>
+<ProductFormFields Product="@product" OnSave="SaveProduct"/>
 
-<p style="color:green;">@message</p>
+<p class="text-success">@message</p>
 
 @code {
     ProductsModel product = new();
@@ -26,13 +18,15 @@
 
     private async Task SaveProduct()
     {
-
         try
         {
             var response = await Http.PostAsJsonAsync("http://localhost:5104/api/Products", product);
 
             if (response.IsSuccessStatusCode)
+            {
                 message = "Product saved successfully!";
+                product = new();
+            }
             else
                 message = "Error saving product!";
         }

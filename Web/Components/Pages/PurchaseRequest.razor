@@ -45,15 +45,13 @@
         </div>
 
         <div class="col-md-4">
-            <label>Select Measuring Unit</label>
-            <select class="form-control mb-2" @bind="PRModel.MUnitId">
-                <option value="0">-- Select M.Unit --</option>
-                @foreach (var mu in MUnitList)
-                {
-                    <option value="@mu.MUnitId">@mu.MUnitName</option>
-                }
-            }
-            </select>
+
+
+            <MUnitChildComponent MUnitChanged="OnMUnitSelected"></MUnitChildComponent>
+
+
+
+
         </div>
 
         <div class="col-md-4">
@@ -101,7 +99,10 @@
                 <RadzenButton ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
                               Text="Delete" Style="margin-left:10px"
                               Click="@(() => DeletePR(pr.PRID))" />
+
+
             </Template>
+
         </RadzenDataGridColumn>
 
     </Columns>
@@ -204,6 +205,10 @@
         }
 
         await LoadPRList();
+    }
+    private void OnMUnitSelected(int selectedId)
+    {
+        PRModel.MUnitId = selectedId;
     }
 
 }

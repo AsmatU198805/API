@@ -1,0 +1,30 @@
+﻿@page "/QuizPage"
+@inject HttpClient Http
+@rendermode InteractiveServer
+
+
+
+
+<h3>Quiz Page</h3>
+<QuizComponent Question="C# is_____________ Language." AnswerA="Programming" AnswerB="Saraiki" ForA="AAnswerMethod" ForB="BAnswerMethod"/>
+<p class="@Color"> Answer is @AnswerStatus</p>
+
+@code {
+
+
+    public string AnswerStatus{ get; set; }
+    public string Color { get; set; }
+
+    private void AAnswerMethod()
+    {
+        AnswerStatus = "Correct";
+        Color = "text-success";
+    }
+
+
+    private void BAnswerMethod()
+    {
+        AnswerStatus = "Not Correct";
+        Color = "text-danger";
+    }
+}
